@@ -3,5 +3,5 @@ var codes = {
   '7913': 'https://gray-camile-20.tiiny.site/',
   '1234': 'https://www.deepl.com/translator',
   '1232': 'https://example.com'
-  '6666' 'https://cornhub.com'
+  '6666': 'https://cornhub.com'
 };
