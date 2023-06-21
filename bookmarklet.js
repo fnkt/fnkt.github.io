@@ -1,110 +1,148 @@
 javascript:(function() {
-    function createWindow(url) {
-      var windowDiv = document.createElement('div');
-      windowDiv.style.position = 'fixed';
-      windowDiv.style.top = '50px';
-      windowDiv.style.left = '50px';
-      windowDiv.style.width = '500px';
-      windowDiv.style.height = '400px';
-      windowDiv.style.border = '1px solid #ddd';
-      windowDiv.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
-      windowDiv.style.zIndex = '9999';
-      windowDiv.style.background = '#000';
-      windowDiv.style.color = '#fff';
-      windowDiv.style.fontFamily = 'monospace';
-      windowDiv.style.userSelect = 'none';
-      windowDiv.style.overflow = 'hidden';
-  
-      var titleBar = document.createElement('div');
-      titleBar.className = 'title-bar';
-      titleBar.addEventListener('mousedown', startDragging, false);
-  
-      var titleText = document.createElement('span');
-      titleText.innerHTML = 'Window';
-      titleBar.appendChild(titleText);
-  
-      var closeButton = document.createElement('span');
-      closeButton.className = 'close-button';
-      closeButton.innerHTML = '&times;';
-      closeButton.innerHTML =
-      closeButton.addEventListener('click', function() {
-        document.body.removeChild(windowDiv);
-      });
-      titleBar.appendChild(closeButton);
-  
-      var iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.style.width = '100%';
-      iframe.style.height = 'calc(100% - 30px)'; 
-      iframe.style.border = 'none';
-  
-      windowDiv.appendChild(titleBar);
-      windowDiv.appendChild(iframe);
-      document.body.appendChild(windowDiv);
-  
-      windowDiv.style.resize = 'both';
-      windowDiv.style.overflow = 'auto';
-  
-      windowDiv.style.position = 'fixed';
-      windowDiv.style.top = '0';
-      windowDiv.style.left = '0';
-      windowDiv.style.width = '400px'; 
-      windowDiv.style.height = '400px'; 
-      windowDiv.style.cursor = 'move';
-      windowDiv.style.zIndex = '9999';
-  
+  var code = prompt('Enter code:');
+  if (code) {
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/fnkt/fnkt.github.io@main/codes.js';
+    script.onload = function() {
+      if (typeof codes !== 'undefined' && codes.hasOwnProperty(code)) {
+        createWindow(codes[code]);
+      } else {
+        alert('Invalid code');
+      }
+    };
+    document.body.appendChild(script);
+  } else {
+    alert('No code entered');
+  }
+
+  function createWindow(url) {
+    var windowDiv = document.createElement('div');
+    windowDiv.style.position = 'fixed';
+    windowDiv.style.top = '50px';
+    windowDiv.style.left = '50px';
+    windowDiv.style.width = '500px';
+    windowDiv.style.height = '400px';
+    windowDiv.style.border = '1px solid #ddd';
+    windowDiv.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
+    windowDiv.style.zIndex = '9999';
+    windowDiv.style.background = '#000';
+    windowDiv.style.color = '#fff';
+    windowDiv.style.fontFamily = 'monospace';
+    windowDiv.style.userSelect = 'none';
+    windowDiv.style.overflow = 'hidden';
+
+    var titleBar = document.createElement('div');
+    titleBar.style.height = '30px';
+    titleBar.style.backgroundColor = '#222';
+    titleBar.style.cursor = 'move';
+    titleBar.style.userSelect = 'none';
+
+    var closeButton = document.createElement('div');
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '5px';
+    closeButton.style.right = '5px';
+    closeButton.style.width = '20px';
+    closeButton.style.height = '20px';
+    closeButton.style.background = 'red';
+    closeButton.style.borderRadius = '50%';
+    closeButton.style.textAlign = 'center';
+    closeButton.style.lineHeight = '20px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.userSelect = 'none';
+    closeButton.textContent = 'X';
+
+    var iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.style.width = '100%';
+    iframe.style.height = 'calc(100% - 30px)';
+    iframe.style.border = 'none';
+
+    windowDiv.appendChild(titleBar);
+    titleBar.appendChild(closeButton);
+    windowDiv.appendChild(iframe);
+    document.body.appendChild(windowDiv);
+
+    makeDraggable(windowDiv);
+    makeResizable(windowDiv);
+    closeButton.addEventListener('click', closeWindow);
+    document.addEventListener('keydown', handleKeyPress);
+
+    function makeDraggable(element) {
       var isDragging = false;
-      var dragStartX, dragStartY, windowStartLeft, windowStartTop;
-  
-      function startDragging(e) {
+      var offsetX = 0;
+      var offsetY = 0;
+
+      titleBar.addEventListener('mousedown', startDrag);
+
+      function startDrag(event) {
         isDragging = true;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        windowStartLeft = parseInt(windowDiv.style.left, 10);
-        windowStartTop = parseInt(windowDiv.style.top, 10);
-  
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', stopDragging);
+        offsetX = event.clientX - element.offsetLeft;
+        offsetY = event.clientY - element.offsetTop;
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
       }
-  
-      function stopDragging() {
+
+      function drag(event) {
+        if (!isDragging) return;
+        element.style.left = event.clientX - offsetX + 'px';
+        element.style.top = event.clientY - offsetY + 'px';
+      }
+
+      function stopDrag() {
         isDragging = false;
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', stopDragging);
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
       }
-  
-      function handleMouseMove(e) {
-        if (!isDragging) return;
-  
-        var dx = e.clientX - dragStartX;
-        var dy = e.clientY - dragStartY;
-  
-        windowDiv.style.left = windowStartLeft + dx + 'px';
-        windowDiv.style.top = windowStartTop + dy + 'px';
+    }
+
+    function makeResizable(element) {
+      var resizer = document.createElement('div');
+      resizer.style.position = 'absolute';
+      resizer.style.width = '8px';
+      resizer.style.height = '8px';
+      resizer.style.bottom = '0';
+      resizer.style.right = '0';
+      resizer.style.cursor = 'se-resize';
+
+      resizer.addEventListener('mousedown', startResize);
+
+      element.appendChild(resizer);
+
+      function startResize(event) {
+        event.preventDefault();
+
+        var startX = event.clientX;
+        var startY = event.clientY;
+        var startWidth = element.offsetWidth;
+        var startHeight = element.offsetHeight;
+
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+
+        function resize(event) {
+          var newWidth = startWidth + event.clientX - startX;
+          var newHeight = startHeight + event.clientY - startY;
+
+          element.style.width = newWidth + 'px';
+          element.style.height = newHeight + 'px';
+          iframe.style.height = 'calc(100% - 30px)';
+        }
+
+        function stopResize() {
+          document.removeEventListener('mousemove', resize);
+          document.removeEventListener('mouseup', stopResize);
+        }
       }
-  
-      titleBar.addEventListener('mousemove', function(e) {
-        if (!isDragging) return;
-  
-        var dx = e.clientX - dragStartX;
-        var dy = e.clientY - dragStartY;
-  
-        titleBar.style.left = windowStartLeft + dx + 'px';
-        titleBar.style.top = windowStartTop + dy + 'px';
-      });
     }
-  
-    var code = prompt('Enter code:');
-    if (code === '3197') {
-      createWindow('https://slopegame.io/1.embed');
-    } else if (code === '7913') {
-      createWindow('https://gray-camile-20.tiiny.site/');
-    } else if (code === '1234') {
-      createWindow('https://www.deepl.com/translator');
-    } else if (code === '1232') {
-      createWindow('https://html5.gamedistribution.com/rvvASMiM/6210bcbbdc2c473bb57a827c3cddc036/index.html?gd_sdk_referrer_url=https%3A%2F%2Fwww.y8.com%2Fgames%2Fhighway_road_racing&key=y8&value=default&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy55OC5jb20vZ2FtZXMvaGlnaHdheV9yb2FkX3JhY2luZyIsInBhcmVudERvbWFpbiI6Ink4LmNvbSIsInRvcERvbWFpbiI6Ink4LmNvbSIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE2In0%253D');
-    } else {
-      alert('Invalid code');
+
+    function closeWindow() {
+      document.body.removeChild(windowDiv);
     }
-  })();
-  
+
+    function handleKeyPress(event) {
+      if (event.key === 'Escape') {
+        closeWindow();
+      }
+    }
+  }
+})();
